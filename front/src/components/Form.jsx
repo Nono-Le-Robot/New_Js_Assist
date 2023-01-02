@@ -1,11 +1,7 @@
 import { useState, useEffect } from "react";
-import { Configuration, OpenAIApi } from "openai";
 import styled from "styled-components";
 import { dangerouslySetInnerHTML } from "react";
-
-const configuration = new Configuration({
-  apiKey: "YOUR API HERE",
-});
+import axios from "axios";
 
 //============================= Speech Recognition ==========================
 var SpeechRecognition =
@@ -38,6 +34,20 @@ export default function Form() {
       return;
     } else {
       setRequestLoader(true);
+      axios
+        .post("http://localhost:5000/OPEN-AI-API", {
+          prompt: userPrompt,
+        })
+        .then((response) => {
+          console.log(response.data);
+          setAIResponse(response.data);
+          setRequestLoader(false);
+          setUserPrompt("");
+        })
+        .catch((err) => {
+          console.log(err);
+        });
+
       const requestLoaderDiv = document.getElementById("request-loader");
       let dots = ".";
       const interval = setInterval(() => {
@@ -51,27 +61,6 @@ export default function Form() {
       if (setRequestLoader === true) {
       }
       setAIResponse("");
-      const openai = new OpenAIApi(configuration);
-      const response = await openai
-        .createCompletion({
-          model: "text-davinci-003",
-          prompt: `${userPrompt}, donne moi la reponse la plus clair possible en mettant en forme avec des balises HTML simplifiés (pas de style a l'interieur) fais attention a ne pas depasser la limite de caractéres (500), ajoute  "&#129302" a la fin de la réponse`,
-          temperature: 0.3,
-          max_tokens: 4000,
-          top_p: 1.0,
-          frequency_penalty: 0.5,
-          presence_penalty: 0.0,
-        })
-        .then((resp) => {
-          setUserPrompt("");
-          setRequestLoader(false);
-          setAIResponse(resp.data.choices[0].text);
-        })
-        .catch(() => {
-          setRequestLoader(false);
-          setAIResponse("error, please retry");
-          console.log("error");
-        });
     }
   };
 
@@ -96,6 +85,22 @@ export default function Form() {
           alert("invalid request (too small)");
           return;
         } else {
+          axios
+            .post("http://localhost:5000/OPEN-AI-API", {
+              prompt: transcript,
+            })
+            .then((response) => {
+              setAIResponse(response.data);
+              setRequestLoader(false);
+              setUserPrompt("");
+              const text = response.data;
+              const resultToSpeech = text.replace(/<[^>]*>/g, "");
+              const readyToSpeech = resultToSpeech.replace("&#129302", "");
+              readOut(readyToSpeech);
+            })
+            .catch((err) => {
+              console.log(err);
+            });
           setRequestLoader(true);
           const requestLoaderDiv = document.getElementById("request-loader");
           let dots = ".";
@@ -111,31 +116,6 @@ export default function Form() {
           }
           setAIResponse("");
         }
-        const openai = new OpenAIApi(configuration);
-        const response = await openai
-          .createCompletion({
-            model: "text-davinci-003",
-            prompt: `${transcript}, donne moi la reponse la plus clair possible en mettant en forme avec des balises HTML simplifiés (pas de style a l'interieur) fais attention a ne pas depasser la limite de caractéres (500), ajoute  "&#129302" a la fin de la réponse`,
-            temperature: 0.3,
-            max_tokens: 4000,
-            top_p: 1.0,
-            frequency_penalty: 0.5,
-            presence_penalty: 0.0,
-          })
-          .then((resp) => {
-            setUserPrompt("");
-            setRequestLoader(false);
-            setAIResponse(resp.data.choices[0].text);
-            const text = resp.data.choices[0].text;
-            const resultToSpeech = text.replace(/<[^>]*>/g, "");
-            const readyToSpeech = resultToSpeech.replace("&#129302", "");
-            readOut(readyToSpeech);
-          })
-          .catch(() => {
-            setRequestLoader(false);
-            setAIResponse("error, please retry");
-            console.log("error");
-          });
       }
     };
   };
