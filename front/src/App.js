@@ -1,15 +1,14 @@
-import "./App.css";
-import Form from "./components/Form.jsx";
-
-function App() {
+import React, { useState } from "react";
+import { BrowserRouter, Routes, Route } from "react-router-dom";
+import Home from "./pages/Home.jsx";
+export default function App() {
   return (
-    <>
-      <div className="App">
-        <h1>New JS Assist </h1>
-      </div>
-      <Form />
-    </>
+    <BrowserRouter>
+      <Routes>
+        <Route path="/" element={<Home />} />
+      </Routes>
+    </BrowserRouter>
   );
 }
 
-export default App;
+// basename="my-sharing-base/"

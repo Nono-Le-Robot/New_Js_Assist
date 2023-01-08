@@ -8,7 +8,7 @@ module.exports.getRequest = async (req, res) => {
   const response = await openai
     .createCompletion({
       model: "text-davinci-003",
-      prompt: `${req.body.prompt}, , donne moi la reponse la plus clair possible en mettant en forme avec des balises HTML simplifiés (pas de style a l'interieur) fais attention a ne pas depasser la limite de caractéres (500), ajoute  "&#129302" a la fin de la réponse`,
+      prompt: `${req.body.prompt}, ajoute des balises HTML "<br>" a chaque fin de phrase.`,
       temperature: 0.3,
       max_tokens: 4000,
       top_p: 1.0,
